@@ -1,0 +1,96 @@
+# NeuCLIR / CAKE-ILC Cross-lingual IR Experiment Configuration
+
+# Supported languages for NeuCLIR
+languages:
+  - fas  # Persian
+  - rus  # Russian
+  - zho  # Chinese
+
+# Data paths (relative to repository root)
+data:
+  corpus_dir: "data/corpus"           # {corpus_dir}/{lang}/*.jsonl
+  topics_dir: "data/topics"           # {topics_dir}/{lang}.topics.txt
+  qrels_dir: "data/qrels"             # {qrels_dir}/{lang}.qrels.txt
+
+# Index paths
+indexes:
+  bm25_dir: "indexes/bm25"            # {bm25_dir}/{lang}/
+  dense_dir: "indexes/dense"          # {dense_dir}/{index_name}_{lang}/
+
+# Run output paths
+runs:
+  bm25_dir: "runs/bm25"
+  dense_dir: "runs/dense"
+  reranked_dir: "runs/reranked"
+
+# BM25 configuration
+bm25:
+  k1: 0.9
+  b: 0.4
+  top_k: 1000
+  run_id_template: "bm25_{lang}"      # Template for TREC run ID
+
+# Dense retrieval configuration
+dense:
+  # mDPR-style dual encoder models
+  mdpr:
+    model_name: "facebook/mdpr-question_encoder-base-nq"
+    doc_encoder: "facebook/mdpr-ctx_encoder-base-nq"
+    query_encoder: "facebook/mdpr-question_encoder-base-nq"
+    batch_size: 128
+    max_length: 512
+    embedding_dim: 768
+    index_name: "mdpr"
+    top_k: 1000
+    run_id_template: "mdpr_{lang}"
+
+  # ColBERT-style late interaction models
+  colbert:
+    model_name: "colbert-ir/colbertv2.0"
+    batch_size: 64
+    max_doc_length: 512
+    max_query_length: 128
+    index_name: "colbert"
+    top_k: 1000
+    run_id_template: "colbert_{lang}"
+    compression: True                  # Use compressed ColBERT indexes
+
+# Reranking configuration
+reranking:
+  # monoT5 / mT5 reranker settings
+  mt5:
+    model_name: "castorini/monot5-base-msmarco-10k"  # or unicamp-dl/mt5-base-en-msmarco
+    batch_size: 32
+    max_length: 512
+    top_k: 100                         # Re-rank only top-k from base run
+    run_id_suffix: "_mt5"              # Appended to base run_id
+    device: "cuda"                     # cuda or cpu
+    use_fp16: True                     # Use mixed precision for faster inference
+
+  # Alternative multilingual mT5 model
+  mt5_multilingual:
+    model_name: "unicamp-dl/mt5-base-mmarco"
+    batch_size: 32
+    max_length: 512
+    top_k: 100
+    run_id_suffix: "_mt5multi"
+    device: "cuda"
+    use_fp16: True
+
+# Evaluation settings
+evaluation:
+  trec_eval_path: "trec_eval"          # Path to trec_eval binary
+  metrics:
+    - "ndcg_cut.10"
+    - "ndcg_cut.20"
+    - "map"
+    - "recip_rank"
+    - "recall.100"
+    - "recall.1000"
+
+# System settings
+system:
+  n_threads: 8                         # Number of threads for indexing/search
+  use_gpu: True                        # Use GPU when available
+  gpu_device: 0                        # GPU device ID
+  random_seed: 42                      # For reproducibility

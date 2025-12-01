@@ -1,0 +1,17 @@
+<top>
+<num> Number: 1
+<title> cross-lingual information retrieval
+<desc> Description:
+Find documents about cross-lingual information retrieval systems and methods.
+<narr> Narrative:
+Relevant documents should discuss techniques, models, or applications of cross-lingual information retrieval, including dense retrieval and neural reranking approaches.
+</top>
+
+<top>
+<num> Number: 2
+<title> neural reranking models
+<desc> Description:
+Documents about neural reranking models for search and retrieval.
+<narr> Narrative:
+Relevant documents describe neural network-based reranking methods such as monoT5, BERT, or other transformer models used for improving search results.
+</top>

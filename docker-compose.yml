@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  clir-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clir-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount indexes directory (read-only for production)
+      - ./indexes:/app/indexes:ro
+      # Mount data directory (read-only)
+      - ./data:/app/data:ro
+      # Mount config
+      - ./config:/app/config:ro
+      # Mount runs directory for output
+      - ./runs:/app/runs
+    environment:
+      - PYTHONPATH=/app/scripts
+      - USE_GPU=false
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Optional: GPU-enabled version
+  clir-api-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clir-api-gpu
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./indexes:/app/indexes:ro
+      - ./data:/app/data:ro
+      - ./config:/app/config:ro
+      - ./runs:/app/runs
+    environment:
+      - PYTHONPATH=/app/scripts
+      - USE_GPU=true
+      - CUDA_VISIBLE_DEVICES=0
+    runtime: nvidia
+    restart: unless-stopped
+    profiles:
+      - gpu
